@@ -3,8 +3,8 @@ export interface User {
   username: string
   email: string
   profilePicture?: string
-  followers: string[]
-  following: string[]
+  followers: Pick<User, '_id' | 'username' | 'profilePicture'>[]
+  following: Pick<User, '_id' | 'username' | 'profilePicture'>[]
   createdAt: string
   userPreferences: {
     likedCategories: Record<string, number>
@@ -47,6 +47,25 @@ export interface Post {
   createdAt: string
   updatedAt: string
   relevanceScore?: number
+}
+
+export interface Notification {
+  _id: string
+  recipient: string
+  type: 'like' | 'comment' | 'follow'
+  initiator: {
+    _id: string
+    username: string
+    profilePicture?: string
+  }
+  post?: {
+    _id: string
+    content: string
+  }
+  message: string
+  read: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 export interface AIAnalysisResponse {
