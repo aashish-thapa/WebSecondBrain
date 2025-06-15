@@ -3,15 +3,7 @@
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import {
-  BrainCircuit,
-  Search,
-  PenSquare,
-  User,
-  LogOut,
-  Menu,
-} from 'lucide-react'
+import { BrainCircuit, PenSquare, User, LogOut, Menu, Bell } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,10 +13,28 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu'
 import { useRouter } from 'next/navigation'
+import * as React from 'react'
+import { Search } from './Search'
+import { NotificationsDropdown } from './NotificationsDropdown'
+import { getNotifications } from '@/lib/api'
 
 export function Navbar() {
   const { user, logout } = useAuth()
   const router = useRouter()
+  const [showNotifications, setShowNotifications] = React.useState(false)
+  const [unreadCount, setUnreadCount] = React.useState(0)
+
+  React.useEffect(() => {
+    if (!user) return
+    // Fetch initial notification count
+    getNotifications()
+      .then((data) => {
+        setUnreadCount(data.filter((n) => !n.read).length)
+      })
+      .catch((err) =>
+        console.error('Failed to fetch initial notification count:', err)
+      )
+  }, [user])
 
   const handleLogout = () => {
     logout()
@@ -46,16 +56,7 @@ export function Navbar() {
 
         {/* Center Section - Search */}
         <div className='flex-1 flex justify-center px-4 lg:px-8'>
-          <div className='relative w-full max-w-lg'>
-            <Input
-              type='search'
-              placeholder='Search for ideas, topics, or people...'
-              className='pl-10 h-10 bg-gray-100 border-transparent focus:bg-white focus:border-primary'
-            />
-            <div className='absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none'>
-              <Search className='h-5 w-5 text-muted-foreground' />
-            </div>
-          </div>
+          <Search />
         </div>
 
         {/* Right Section */}
@@ -66,35 +67,58 @@ export function Navbar() {
           </Button>
 
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant='ghost' className='w-10 h-10 rounded-full'>
-                  <div className='w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg'>
-                    {user.username.charAt(0).toUpperCase()}
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className='w-56' align='end'>
-                <DropdownMenuLabel>
-                  <p className='font-bold'>{user.username}</p>
-                  <p className='text-xs text-muted-foreground font-normal'>
-                    @{user.username}
-                  </p>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={() => router.push(`/profile/${user.username}`)}
+            <>
+              <div className='relative'>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='rounded-full'
+                  onClick={() => setShowNotifications(!showNotifications)}
                 >
-                  <User className='mr-2 h-4 w-4' />
-                  <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={handleLogout}>
-                  <LogOut className='mr-2 h-4 w-4' />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <Bell className='h-6 w-6' />
+                  {unreadCount > 0 && (
+                    <span className='absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white' />
+                  )}
+                  <span className='sr-only'>View notifications</span>
+                </Button>
+                {showNotifications && (
+                  <NotificationsDropdown
+                    onClose={() => setShowNotifications(false)}
+                    setUnreadCount={setUnreadCount}
+                  />
+                )}
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant='ghost' className='w-10 h-10 rounded-full'>
+                    <div className='w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg'>
+                      {user.username.charAt(0).toUpperCase()}
+                    </div>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className='w-56' align='end'>
+                  <DropdownMenuLabel>
+                    <p className='font-bold'>{user.username}</p>
+                    <p className='text-xs text-muted-foreground font-normal'>
+                      @{user.username}
+                    </p>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => router.push(`/profile/${user.username}`)}
+                  >
+                    <User className='mr-2 h-4 w-4' />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={handleLogout}>
+                    <LogOut className='mr-2 h-4 w-4' />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <>
               <Link href='/login'>

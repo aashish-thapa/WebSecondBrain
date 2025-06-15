@@ -1,13 +1,21 @@
 'use client'
 
 import * as React from 'react'
-import { getFeed } from '@/lib/api'
+import {
+  getFeed,
+  followUser,
+  unfollowUser,
+  getProfile,
+  searchUsers,
+  getUserById,
+} from '@/lib/api'
 import { Post, User } from '@/types'
 import { PostCard } from '@/components/feed/PostCard'
 import { Frown, CalendarDays, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/contexts/AuthContext'
 import { PostCardSkeleton } from '@/components/feed/PostCardSkeleton'
+import { FollowListModal } from '@/components/profile/FollowListModal'
 
 interface ProfileClientProps {
   username: string
@@ -34,31 +42,48 @@ function ProfileHeaderSkeleton() {
 }
 
 export default function ProfileClient({ username }: ProfileClientProps) {
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, updateUser } = useAuth()
   const [profile, setProfile] = React.useState<User | null>(null)
   const [posts, setPosts] = React.useState<Post[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
+  const [modalContent, setModalContent] = React.useState<{
+    title: string
+    users: User['followers']
+  } | null>(null)
+
+  // Derived state to check if the current user is following the profile user
+  const isFollowing = React.useMemo(() => {
+    return currentUser?.following?.some((f) => f._id === profile?._id) ?? false
+  }, [currentUser, profile])
 
   React.useEffect(() => {
     async function loadProfileAndPosts() {
       setIsLoading(true)
       setError(null)
       try {
-        // Since there is no dedicated endpoint for a user's posts,
-        // we fetch the entire feed and filter it.
+        let profileData: User
+
+        // If viewing own profile, use the dedicated getProfile endpoint
+        if (currentUser && currentUser.username === username) {
+          profileData = await getProfile()
+        } else {
+          // Otherwise, search for the user to get their ID, then full profile
+          const users = await searchUsers(username)
+          if (users.length === 0) {
+            setError('User not found.')
+            setIsLoading(false)
+            return
+          }
+          const profileUser = users[0]
+          profileData = await getUserById(profileUser._id)
+        }
+
+        setProfile(profileData)
+
+        // Fetch and filter posts for the displayed profile
         const allPosts = await getFeed()
         const userPosts = allPosts.filter((p) => p.user.username === username)
-
-        if (userPosts.length > 0) {
-          // Extract profile information from the first post
-          setProfile(userPosts[0].user)
-        } else {
-          // Handle case where user exists but has no posts - this part of the UI
-          // would ideally be powered by a dedicated /api/users/:username endpoint.
-          // For now, we show a "not found" state if no posts are found.
-          setError('User not found or has not posted yet.')
-        }
         setPosts(userPosts)
       } catch (e) {
         if (e instanceof Error) {
@@ -74,7 +99,25 @@ export default function ProfileClient({ username }: ProfileClientProps) {
     if (username) {
       loadProfileAndPosts()
     }
-  }, [username])
+  }, [username, currentUser])
+
+  const handleFollowToggle = async () => {
+    if (!currentUser || !profile) return
+
+    try {
+      if (isFollowing) {
+        await unfollowUser(profile._id)
+      } else {
+        await followUser(profile._id)
+      }
+      // Re-fetch the logged-in user's profile to get updated following list
+      const updatedUser = await getProfile()
+      updateUser(updatedUser)
+    } catch (err) {
+      console.error('Failed to toggle follow state:', err)
+      // Optionally show an error to the user
+    }
+  }
 
   const handlePostDeleted = (postId: string) => {
     setPosts(posts.filter((p) => p._id !== postId))
@@ -120,9 +163,9 @@ export default function ProfileClient({ username }: ProfileClientProps) {
               {isOwnProfile ? (
                 <Button variant='outline'>Edit Profile</Button>
               ) : (
-                <Button>
+                <Button onClick={handleFollowToggle}>
                   <UserPlus className='w-4 h-4 mr-2' />
-                  Follow
+                  {isFollowing ? 'Unfollow' : 'Follow'}
                 </Button>
               )}
             </div>
@@ -135,14 +178,30 @@ export default function ProfileClient({ username }: ProfileClientProps) {
         </div>
         <div className='mt-6 pt-6 border-t flex items-center gap-6 text-sm'>
           {/* The full user object with follower counts is not available here, so we show placeholders */}
-          <p>
+          <button
+            className='hover:underline'
+            onClick={() =>
+              setModalContent({
+                title: 'Following',
+                users: profile.following,
+              })
+            }
+          >
             <span className='font-bold'>{profile.following?.length || 0}</span>{' '}
             Following
-          </p>
-          <p>
+          </button>
+          <button
+            className='hover:underline'
+            onClick={() =>
+              setModalContent({
+                title: 'Followers',
+                users: profile.followers,
+              })
+            }
+          >
             <span className='font-bold'>{profile.followers?.length || 0}</span>{' '}
             Followers
-          </p>
+          </button>
         </div>
       </div>
 
@@ -165,6 +224,13 @@ export default function ProfileClient({ username }: ProfileClientProps) {
           </div>
         )}
       </div>
+      {modalContent && (
+        <FollowListModal
+          title={modalContent.title}
+          users={modalContent.users}
+          onClose={() => setModalContent(null)}
+        />
+      )}
     </div>
   )
 }
