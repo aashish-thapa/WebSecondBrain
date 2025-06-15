@@ -22,11 +22,34 @@ async function fetcher(url: string, options: RequestInit = {}) {
   const response = await fetch(url, { ...options, headers })
 
   if (!response.ok) {
+    if (response.status === 401) {
+      // Token is invalid or expired.
+      // Clear local storage and force a reload to redirect to login.
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      // Redirect to login page
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login'
+      }
+      // Return a promise that will not resolve to prevent further processing
+      return new Promise(() => {})
+    }
     const errorData = await response.json()
     throw new Error(errorData.message || 'Something went wrong')
   }
 
-  return response.json()
+  // If status is 204 No Content, the body is empty and parsing is not needed.
+  if (response.status === 204) {
+    return { success: true }
+  }
+
+  // For other successful responses, try to parse JSON.
+  // If parsing fails (e.g., empty body on a 200 OK), return a generic success object.
+  try {
+    return await response.json()
+  } catch {
+    return { success: true }
+  }
 }
 
 // I. Auth Endpoints

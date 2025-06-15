@@ -37,9 +37,9 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
     setIsLiked(!isLiked)
 
     try {
-      const updatedPost = await likePost(post._id)
-      setLikes(updatedPost.likes.length)
-      setIsLiked(updatedPost.likes.includes(user._id))
+      await likePost(post._id)
+      // If the API call succeeds, the optimistic update was correct.
+      // We don't need to do anything with the response.
     } catch (error) {
       console.error('Failed to like post:', error)
       // Revert on error
@@ -108,9 +108,12 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
       </div>
       <div className='mt-4 pl-12 sm:pl-16 flex justify-between items-center text-muted-foreground'>
         <div className='flex items-center gap-6'>
-          <button className='flex items-center gap-2 text-xs hover:text-primary transition-colors'>
+          <Link
+            href={`/post/${post._id}`}
+            className='flex items-center gap-2 text-xs hover:text-primary transition-colors'
+          >
             <MessageCircle className='w-4 h-4' /> {post.comments.length}
-          </button>
+          </Link>
           <button
             onClick={handleLike}
             disabled={isLiking}

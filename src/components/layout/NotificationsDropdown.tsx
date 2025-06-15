@@ -28,7 +28,7 @@ export function NotificationsDropdown({
   setUnreadCount,
 }: {
   onClose: () => void
-  setUnreadCount: (count: number) => void
+  setUnreadCount: React.Dispatch<React.SetStateAction<number>>
 }) {
   const [notifications, setNotifications] = React.useState<NotificationType[]>(
     []
