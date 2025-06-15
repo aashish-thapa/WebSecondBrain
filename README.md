@@ -1,40 +1,64 @@
-Did not realised tailwind had new version that have changed everything
+# Backend Documentation for Frontend Features
 
+This document outlines the features currently implemented in the frontend that do not have corresponding dedicated API endpoints. This guide is intended to help backend developers understand the data requirements and frontend implementation details.
 
+## 1. User Profile Page
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+### Description
 
-## Getting Started
+The user profile page displays a user's profile information and a list of their posts.
 
-First, run the development server:
+### Frontend Implementation
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Route:** `/profile/[username]`
+- **Client Component:** `src/app/(main)/profile/[username]/ProfileClient.tsx`
+- **Data Fetching:** The component fetches the entire feed using `getFeed()` from `src/lib/api.ts` and then filters the posts by the `username` from the URL.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Backend Requirements
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- A dedicated API endpoint to fetch a user's profile information by their username.
+- A dedicated API endpoint to fetch all posts by a specific user.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 2. Single Post Page
 
-To learn more about Next.js, take a look at the following resources:
+### Description
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The single post page displays a specific post and its comments.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Frontend Implementation
 
-## Deploy on Vercel
+- **Route:** `/post/[id]`
+- **Client Component:** `src/app/(main)/post/[id]/PostClient.tsx`
+- **Data Fetching:** The component fetches the post data using `getPostById(id)` from `src/lib/api.ts`, where `id` is from the URL.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Backend Requirements
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- The current `getPostById(id)` function is sufficient, but it's important to ensure it returns the full post object with comments.
+
+---
+
+## 3. Feed Page
+
+### Description
+
+The feed page displays a list of all posts from all users.
+
+### Frontend Implementation
+
+- **Route:** `/feed`
+- **Component:** `src/app/(main)/feed/page.tsx`
+- **Data Fetching:** The component fetches all posts using `getFeed()` from `src/lib/api.ts`.
+
+### Backend Requirements
+
+- The current `getFeed()` function is sufficient. No new endpoint is immediately required for this feature, but pagination should be considered for the future.
+
+---
+
+## 4. User and Post Types
+
+For reference, here are the TypeScript types used for `User` and `Post` objects on the frontend. The backend should aim to provide data that conforms to these structures.
+
+- **Types file:** `src/types/index.ts`
