@@ -10,7 +10,7 @@ import { SendHorizonal } from 'lucide-react'
 import Link from 'next/link'
 
 interface CreatePostFormProps {
-  onPostCreated: (newPost: Post) => void
+  onPostCreated: (newPost: Omit<Post, 'user'>) => void
 }
 
 export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
@@ -28,7 +28,9 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
 
     try {
       const newPost = await createPost({ content })
-      onPostCreated(newPost)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { user: _, ...postWithoutUser } = newPost
+      onPostCreated(postWithoutUser)
       setContent('')
 
       // Fire-and-forget AI analysis

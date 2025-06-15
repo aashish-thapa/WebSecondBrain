@@ -49,7 +49,7 @@ export function Navbar() {
           <Link href='/feed' className='flex items-center gap-2'>
             <BrainCircuit className='h-7 w-7 text-primary' />
             <span className='hidden sm:inline-block font-bold text-lg'>
-              Second Brain
+              SayItLoud
             </span>
           </Link>
         </div>

@@ -7,8 +7,10 @@ import { PostCard } from '@/components/feed/PostCard'
 import { CreatePostForm } from '@/components/feed/CreatePostForm'
 import { PostCardSkeleton } from '@/components/feed/PostCardSkeleton'
 import { Frown } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function FeedPage() {
+  const { user } = useAuth()
   const [posts, setPosts] = React.useState<Post[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
@@ -35,8 +37,23 @@ export default function FeedPage() {
     loadFeed()
   }, [])
 
-  const handlePostCreated = (newPost: Post) => {
-    setPosts([newPost, ...posts])
+  const handlePostCreated = (newPost: Omit<Post, 'user'>) => {
+    if (!user) return
+
+    const postWithUser: Post = {
+      ...newPost,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        profilePicture: user.profilePicture,
+        followers: user.followers || [],
+        following: user.following || [],
+        createdAt: user.createdAt,
+        userPreferences: user.userPreferences,
+      },
+    }
+    setPosts([postWithUser, ...posts])
   }
 
   const handlePostDeleted = async (postId: string) => {

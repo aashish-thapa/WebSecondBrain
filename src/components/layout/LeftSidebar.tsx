@@ -12,7 +12,12 @@ export function LeftSidebar() {
     { href: '/feed', label: 'Home', icon: Home },
     { href: '/explore', label: 'Explore', icon: Compass },
     { href: '/notifications', label: 'Notifications', icon: Bell },
-    { href: '/messages', label: 'Messages', icon: Mail },
+    {
+      href: '#',
+      label: 'Messages',
+      icon: Mail,
+      onClick: () => alert('Feature coming soon!'),
+    },
     { href: '/profile', label: 'Profile', icon: User },
   ]
 
@@ -37,7 +42,7 @@ export function LeftSidebar() {
   if (!user) {
     return (
       <div className='bg-white p-4 rounded-2xl shadow-sm border border-gray-200/80'>
-        <p className='text-center font-medium'>Welcome to Second Brain</p>
+        <p className='text-center font-medium'>Welcome to SayItLoud</p>
         <p className='mt-2 text-sm text-center text-muted-foreground'>
           Log in to join the discussion and share your thoughts.
         </p>
@@ -69,8 +74,8 @@ export function LeftSidebar() {
       <nav className='bg-white p-3 rounded-2xl shadow-sm border border-gray-200/80'>
         <ul className='space-y-1'>
           {navItems.map((item) => (
-            <li key={item.href}>
-              <Link href={item.href}>
+            <li key={item.label}>
+              <Link href={item.href} onClick={item.onClick}>
                 <div className='flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 transition-colors font-semibold text-foreground/80 hover:text-primary'>
                   <item.icon className='w-6 h-6' />
                   <span>{item.label}</span>
