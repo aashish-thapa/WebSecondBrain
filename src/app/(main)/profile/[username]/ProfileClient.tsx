@@ -52,18 +52,17 @@ export default function ProfileClient({ username }: ProfileClientProps) {
     users: User['followers']
   } | null>(null)
 
-  // Derived state to check if the current user is following the profile user
   const isFollowing = React.useMemo(() => {
     return currentUser?.following?.some((f) => f._id === profile?._id) ?? false
-  }, [currentUser, profile])
+  }, [currentUser?.following, profile?._id])
 
   React.useEffect(() => {
-    async function loadProfileAndPosts() {
+    async function loadAllData() {
+      if (!username) return
       setIsLoading(true)
       setError(null)
       try {
         let profileData: User
-
         // If viewing own profile, use the dedicated getProfile endpoint
         if (currentUser && currentUser.username === username) {
           profileData = await getProfile()
@@ -71,17 +70,13 @@ export default function ProfileClient({ username }: ProfileClientProps) {
           // Otherwise, search for the user to get their ID, then full profile
           const users = await searchUsers(username)
           if (users.length === 0) {
-            setError('User not found.')
-            setIsLoading(false)
-            return
+            throw new Error('User not found.')
           }
-          const profileUser = users[0]
-          profileData = await getUserById(profileUser._id)
+          profileData = await getUserById(users[0]._id)
         }
-
         setProfile(profileData)
 
-        // Fetch and filter posts for the displayed profile
+        // Fetch posts for the displayed profile
         const allPosts = await getFeed()
         const userPosts = allPosts.filter((p) => p.user.username === username)
         setPosts(userPosts)
@@ -96,10 +91,10 @@ export default function ProfileClient({ username }: ProfileClientProps) {
       }
     }
 
-    if (username) {
-      loadProfileAndPosts()
-    }
-  }, [username, currentUser])
+    loadAllData()
+    // This effect should re-run when the user navigates to a new profile,
+    // or when the logged-in user's data might have changed.
+  }, [username, currentUser?._id])
 
   const handleFollowToggle = async () => {
     if (!currentUser || !profile) return

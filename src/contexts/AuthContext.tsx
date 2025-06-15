@@ -32,38 +32,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const login = (userData: AuthenticatedUser) => {
-    localStorage.setItem('token', userData.token)
+  const login = React.useCallback((userData: AuthenticatedUser) => {
+    localStorage.setItem('token', userData.token as string)
     localStorage.setItem('user', JSON.stringify(userData))
-    setToken(userData.token)
+    setToken(userData.token as string)
     setUser(userData)
-  }
+  }, [])
 
-  const updateUser = (userData: AuthenticatedUser | null) => {
+  const updateUser = React.useCallback((userData: AuthenticatedUser | null) => {
     if (userData) {
       localStorage.setItem('user', JSON.stringify(userData))
       setUser(userData)
     } else {
-      // Handle logout case if needed, or just clear user
       localStorage.removeItem('user')
       setUser(null)
     }
-  }
+  }, [])
 
-  const logout = () => {
+  const logout = React.useCallback(() => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setToken(null)
     setUser(null)
-  }
+  }, [])
 
-  return (
-    <AuthContext.Provider
-      value={{ user, token, login, logout, updateUser, isLoading }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = React.useMemo(
+    () => ({ user, token, login, logout, updateUser, isLoading }),
+    [user, token, login, logout, updateUser, isLoading]
   )
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
