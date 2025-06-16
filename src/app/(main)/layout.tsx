@@ -31,7 +31,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     keepServerAwake()
 
     // And then every 10 minutes
-    const intervalId = setInterval(keepServerAwake, 10 * 60 * 1000)
+    const intervalId = setInterval(keepServerAwake, 13 * 60 * 1000)
 
     // Clear interval on component unmount
     return () => clearInterval(intervalId)
