@@ -34,6 +34,7 @@ export interface AIAnalysis {
   topics: string[]
   summary: string
   category: string
+  factCheck?: 'support' | 'neutral' | 'oppose'
 }
 
 export interface Post {
