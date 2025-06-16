@@ -32,6 +32,8 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
   )
   const [isLiking, setIsLiking] = React.useState(false)
   const [isDeleting, setIsDeleting] = React.useState(false)
+  const [imageError, setImageError] = React.useState(false)
+  const [isExpanded, setIsExpanded] = React.useState(false)
 
   const handleLike = async () => {
     if (!user || isLiking) return
@@ -84,6 +86,11 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
   }
 
   const isToxic = post.aiAnalysis?.toxicity?.detected === true
+  const isLongPost = post.content.length > 280
+
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded)
+  }
 
   return (
     <div
@@ -120,19 +127,40 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
                 })}
               </p>
             </div>
-            <Link href={`/post/${post._id}`} className='group'>
-              <p className='mt-3 text-base text-foreground/90 whitespace-pre-wrap group-hover:text-primary/80 transition-colors'>
-                {post.content}
-              </p>
-            </Link>
-            {post.image && (
-              <div className='mt-4'>
+            <div className='mt-3 text-base text-foreground/90 whitespace-pre-wrap'>
+              {isLongPost && !isExpanded ? (
+                <>
+                  {post.content.substring(0, 280)}...
+                  <button
+                    onClick={toggleExpanded}
+                    className='text-primary font-semibold hover:underline ml-1'
+                  >
+                    View more
+                  </button>
+                </>
+              ) : (
+                <p>
+                  {post.content}
+                  {isLongPost && (
+                    <button
+                      onClick={toggleExpanded}
+                      className='text-primary font-semibold hover:underline ml-1'
+                    >
+                      View less
+                    </button>
+                  )}
+                </p>
+              )}
+            </div>
+            {post.image && !imageError && (
+              <div className='mt-4 relative'>
                 <Image
                   src={post.image}
                   alt='Post image'
                   width={800}
                   height={600}
                   className='rounded-xl border'
+                  onError={() => setImageError(true)}
                 />
               </div>
             )}
