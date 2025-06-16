@@ -3,11 +3,11 @@ import ProfileClient from './ProfileClient'
 import { Metadata } from 'next'
 
 type Props = {
-  params: { username: string }
+  params: Promise<{ username: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { username } = params
+  const { username } = await params
   let user = null
 
   try {
@@ -56,6 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default function ProfilePage({ params }: Props) {
-  return <ProfileClient username={params.username} />
+export default async function ProfilePage({ params }: Props) {
+  const { username } = await params
+  return <ProfileClient username={username} />
 }

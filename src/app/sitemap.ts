@@ -1,6 +1,8 @@
 import { getAllPosts, searchUsers } from '@/lib/api'
 import { MetadataRoute } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 const URL = 'https://sayitloud.vercel.app'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

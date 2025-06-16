@@ -3,11 +3,11 @@ import { getPostById } from '@/lib/api'
 import { Metadata } from 'next'
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = params
+  const { id } = await params
   try {
     const post = await getPostById(id)
     if (!post) {
@@ -49,6 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default function PostPage({ params }: Props) {
-  return <PostClient id={params.id} />
+export default async function PostPage({ params }: Props) {
+  const { id } = await params
+  return <PostClient id={id} />
 }
