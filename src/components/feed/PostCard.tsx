@@ -16,6 +16,7 @@ import * as React from 'react'
 import { likePost, deletePost } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
+import Image from 'next/image'
 
 interface PostCardProps {
   post: Post
@@ -124,6 +125,17 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
                 {post.content}
               </p>
             </Link>
+            {post.image && (
+              <div className='mt-4'>
+                <Image
+                  src={post.image}
+                  alt='Post image'
+                  width={800}
+                  height={600}
+                  className='rounded-xl border'
+                />
+              </div>
+            )}
           </div>
         </div>
         <div className='mt-4 pl-12 sm:pl-16 flex justify-between items-center text-muted-foreground'>

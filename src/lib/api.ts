@@ -9,11 +9,17 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
-async function fetcher(url: string, options: RequestInit = {}) {
+async function fetcher(
+  url: string,
+  options: RequestInit = {},
+  isFormData = false
+) {
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null
   const headers = new Headers(options.headers)
-  headers.set('Content-Type', 'application/json')
+  if (!isFormData) {
+    headers.set('Content-Type', 'application/json')
+  }
 
   if (token) {
     headers.set('Authorization', `Bearer ${token}`)
@@ -114,11 +120,28 @@ export async function getPostById(postId: string): Promise<Post> {
 
 export async function createPost(postData: {
   content: string
-  image?: string
+  image?: File
 }): Promise<Post> {
+  // If there is an image, use FormData
+  if (postData.image) {
+    const formData = new FormData()
+    formData.append('content', postData.content)
+    formData.append('image', postData.image)
+
+    return fetcher(
+      `${API_URL}/posts`,
+      {
+        method: 'POST',
+        body: formData,
+      },
+      true // Pass true to indicate this is a FormData request
+    )
+  }
+
+  // Otherwise, send as JSON
   return fetcher(`${API_URL}/posts`, {
     method: 'POST',
-    body: JSON.stringify(postData),
+    body: JSON.stringify({ content: postData.content }),
   })
 }
 
