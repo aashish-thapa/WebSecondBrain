@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Home, Compass, Bell, Mail, User, PenSquare } from 'lucide-react'
+import Image from 'next/image'
 
 export function LeftSidebar() {
   const { user, isLoading: loading } = useAuth()
@@ -60,8 +61,17 @@ export function LeftSidebar() {
       <div className='bg-white p-4 rounded-2xl shadow-sm border border-gray-200/80'>
         <Link href={`/profile/${user.username}`} className='block group'>
           <div className='flex items-center gap-3'>
-            <div className='w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xl flex-shrink-0'>
-              {user.username.charAt(0).toUpperCase()}
+            <div className='w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xl flex-shrink-0 relative overflow-hidden'>
+              {user.profilePicture ? (
+                <Image
+                  src={user.profilePicture}
+                  alt={user.username}
+                  layout='fill'
+                  objectFit='cover'
+                />
+              ) : (
+                user.username.charAt(0).toUpperCase()
+              )}
             </div>
             <div>
               <p className='font-bold group-hover:underline'>{user.username}</p>

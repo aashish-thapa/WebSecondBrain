@@ -40,7 +40,18 @@ async function fetcher(
       // Return a promise that will not resolve to prevent further processing
       return new Promise(() => {})
     }
-    const errorData = await response.json()
+    // Try to parse the error response as JSON, but fall back to plain text
+    // if it's not in JSON format.
+    const contentType = response.headers.get('content-type')
+    let errorData
+    if (contentType && contentType.includes('application/json')) {
+      errorData = await response.json()
+    } else {
+      const errorText = await response.text()
+      errorData = {
+        message: errorText || `Request failed with status ${response.status}`,
+      }
+    }
     throw new Error(errorData.message || 'Something went wrong')
   }
 
@@ -203,4 +214,25 @@ export async function markAllNotificationsAsRead(): Promise<{
   return fetcher(`${API_URL}/notifications/read-all`, {
     method: 'PUT',
   })
+}
+
+export async function createComment(
+  postId: string,
+  content: string
+): Promise<CommentType> {
+  return fetcher(`${API_URL}/posts/${postId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  })
+}
+
+export async function updateUserProfile(formData: FormData): Promise<User> {
+  return fetcher(
+    `${API_URL}/auth/profile/picture`,
+    {
+      method: 'PUT',
+      body: formData,
+    },
+    true
+  )
 }

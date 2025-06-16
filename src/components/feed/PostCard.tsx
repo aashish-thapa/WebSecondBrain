@@ -107,8 +107,17 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
       <div className='p-5 sm:p-6'>
         <div className='flex items-start gap-4'>
           <Link href={`/profile/${post.user.username}`}>
-            <div className='w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0'>
-              {post.user.username.charAt(0).toUpperCase()}
+            <div className='w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0 relative overflow-hidden'>
+              {post.user.profilePicture ? (
+                <Image
+                  src={post.user.profilePicture}
+                  alt={post.user.username}
+                  layout='fill'
+                  objectFit='cover'
+                />
+              ) : (
+                post.user.username.charAt(0).toUpperCase()
+              )}
             </div>
           </Link>
           <div className='flex-1'>

@@ -17,6 +17,7 @@ import * as React from 'react'
 import { Search } from './Search'
 import { NotificationsDropdown } from './NotificationsDropdown'
 import { getNotifications } from '@/lib/api'
+import Image from 'next/image'
 
 export function Navbar() {
   const { user, logout } = useAuth()
@@ -91,13 +92,25 @@ export function Navbar() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant='ghost' className='w-10 h-10 rounded-full'>
-                    <div className='w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg'>
-                      {user.username.charAt(0).toUpperCase()}
+                  <Button
+                    variant='ghost'
+                    className='w-10 h-10 rounded-full p-0'
+                  >
+                    <div className='w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg relative overflow-hidden'>
+                      {user.profilePicture ? (
+                        <Image
+                          src={user.profilePicture}
+                          alt={user.username}
+                          layout='fill'
+                          objectFit='cover'
+                        />
+                      ) : (
+                        user.username.charAt(0).toUpperCase()
+                      )}
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className='w-56' align='end'>
+                <DropdownMenuContent className='w-56 bg-white' align='end'>
                   <DropdownMenuLabel>
                     <p className='font-bold'>{user.username}</p>
                     <p className='text-xs text-muted-foreground font-normal'>
