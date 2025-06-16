@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Second Brain',
+  title: 'SAY IT LOUD',
   description: 'Thoughts, ideas, and connections.',
 }
 

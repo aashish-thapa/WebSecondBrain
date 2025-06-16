@@ -10,6 +10,9 @@ import {
   BarChart2,
   Trash2,
   ShieldAlert,
+  ThumbsUp,
+  ThumbsDown,
+  Minus,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import * as React from 'react'
@@ -87,6 +90,7 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
 
   const isToxic = post.aiAnalysis?.toxicity?.detected === true
   const isLongPost = post.content.length > 280
+  const factCheck = post.aiAnalysis?.factCheck
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded)
@@ -201,6 +205,27 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
             </button>
           </div>
           <div className='flex items-center gap-4'>
+            {factCheck && (
+              <div
+                className={cn(
+                  'text-xs flex items-center gap-2  py-1 px-2.5 rounded-full',
+                  {
+                    'bg-green-100 text-green-800': factCheck === 'support',
+                    'bg-red-100 text-red-800': factCheck === 'oppose',
+                    'bg-gray-100 text-gray-800': factCheck === 'neutral',
+                  }
+                )}
+              >
+                {factCheck === 'support' && (
+                  <ThumbsUp className='w-3.5 h-3.5' />
+                )}
+                {factCheck === 'oppose' && (
+                  <ThumbsDown className='w-3.5 h-3.5' />
+                )}
+                {factCheck === 'neutral' && <Minus className='w-3.5 h-3.5' />}
+                <span className='font-semibold capitalize'>{factCheck}</span>
+              </div>
+            )}
             <div className='text-xs flex items-center gap-2 bg-secondary text-secondary-foreground py-1 px-2.5 rounded-full'>
               <BarChart2 className='w-3.5 h-3.5' />
               <span>{post.aiAnalysis.category}</span>

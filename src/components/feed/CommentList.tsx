@@ -3,6 +3,7 @@
 import { Comment as CommentType } from '@/types'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface CommentListProps {
   comments: CommentType[]
@@ -26,8 +27,17 @@ export function CommentList({ comments }: CommentListProps) {
         {comments.map((comment) => (
           <li key={comment._id} className='p-4 flex items-start gap-4'>
             <Link href={`/profile/${comment.user.username}`}>
-              <div className='w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold flex-shrink-0'>
-                {comment.user.username.charAt(0).toUpperCase()}
+              <div className='w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold flex-shrink-0 relative overflow-hidden'>
+                {comment.user.profilePicture ? (
+                  <Image
+                    src={comment.user.profilePicture}
+                    alt={comment.user.username}
+                    layout='fill'
+                    objectFit='cover'
+                  />
+                ) : (
+                  comment.user.username.charAt(0).toUpperCase()
+                )}
               </div>
             </Link>
             <div className='flex-1'>
@@ -45,6 +55,17 @@ export function CommentList({ comments }: CommentListProps) {
                 </p>
               </div>
               <p className='mt-1 text-foreground/90'>{comment.text}</p>
+              {comment.image && (
+                <div className='mt-2'>
+                  <Image
+                    src={comment.image}
+                    alt='Comment image'
+                    width={300}
+                    height={300}
+                    className='rounded-lg object-cover'
+                  />
+                </div>
+              )}
             </div>
           </li>
         ))}

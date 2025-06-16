@@ -21,6 +21,7 @@ export interface Comment {
   _id: string
   user: User
   text: string
+  image?: string
   createdAt: string
 }
 
@@ -34,6 +35,7 @@ export interface AIAnalysis {
   topics: string[]
   summary: string
   category: string
+  factCheck?: 'support' | 'neutral' | 'oppose'
 }
 
 export interface Post {

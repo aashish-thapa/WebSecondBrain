@@ -6,9 +6,10 @@ import { Textarea } from '@/components/ui/Textarea'
 import { createPost, analyzePost } from '@/lib/api'
 import { Post } from '@/types'
 import { useAuth } from '@/contexts/AuthContext'
-import { SendHorizonal, ImageIcon, X } from 'lucide-react'
+import { SendHorizonal, ImageIcon, X, Smile } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react'
 
 interface CreatePostFormProps {
   onPostCreated: (newPost: Omit<Post, 'user'>) => void
@@ -21,6 +22,7 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
   const [imagePreview, setImagePreview] = React.useState<string | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [showEmojiPicker, setShowEmojiPicker] = React.useState(false)
 
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -40,6 +42,10 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     }
   }
 
+  const onEmojiClick = (emojiData: EmojiClickData) => {
+    setContent((prevContent) => prevContent + emojiData.emoji)
+  }
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!content.trim() || !user) return
@@ -57,6 +63,7 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
       onPostCreated(postWithoutUser)
       setContent('')
       removeImage()
+      setShowEmojiPicker(false)
 
       // Fire-and-forget AI analysis
       analyzePost(newPost._id)
@@ -86,8 +93,17 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     <div className='bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5'>
       <form onSubmit={handleSubmit} className='flex items-start gap-4'>
         <Link href={`/profile/${user.username}`}>
-          <div className='w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0'>
-            {user.username.charAt(0).toUpperCase()}
+          <div className='w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0 relative overflow-hidden'>
+            {user.profilePicture ? (
+              <Image
+                src={user.profilePicture}
+                alt={user.username}
+                layout='fill'
+                objectFit='cover'
+              />
+            ) : (
+              user.username.charAt(0).toUpperCase()
+            )}
           </div>
         </Link>
         <div className='flex-1 space-y-3'>
@@ -120,22 +136,41 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
             </div>
           )}
           <div className='flex justify-between items-center'>
-            <input
-              type='file'
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className='hidden'
-              accept='image/png, image/jpeg, image/gif'
-            />
-            <Button
-              type='button'
-              variant='ghost'
-              size='icon'
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading}
-            >
-              <ImageIcon className='w-5 h-5 text-primary' />
-            </Button>
+            <div className='flex items-center gap-1'>
+              <input
+                type='file'
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className='hidden'
+                accept='image/png, image/jpeg, image/gif'
+                disabled={isLoading}
+              />
+              <Button
+                type='button'
+                variant='ghost'
+                size='icon'
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isLoading}
+              >
+                <ImageIcon className='w-5 h-5 text-primary' />
+              </Button>
+              <div className='relative'>
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='icon'
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  disabled={isLoading}
+                >
+                  <Smile className='w-5 h-5 text-primary' />
+                </Button>
+                {showEmojiPicker && (
+                  <div className='absolute z-10 mt-2'>
+                    <EmojiPicker onEmojiClick={onEmojiClick} />
+                  </div>
+                )}
+              </div>
+            </div>
             <div className='flex justify-end'>
               <Button
                 type='submit'
