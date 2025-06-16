@@ -96,7 +96,7 @@ export default function ProfileClient({ username }: ProfileClientProps) {
     loadAllData()
     // This effect should re-run when the user navigates to a new profile,
     // or when the logged-in user's data might have changed.
-  }, [username, currentUser?._id])
+  }, [username, currentUser])
 
   const handleFollowToggle = async () => {
     if (!currentUser || !profile) return
