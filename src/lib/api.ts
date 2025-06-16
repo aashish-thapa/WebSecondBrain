@@ -170,11 +170,25 @@ export async function likePost(postId: string): Promise<Post> {
 
 export async function commentOnPost(
   postId: string,
-  text: string
+  commentData: { text: string; image?: File }
 ): Promise<CommentType> {
+  if (commentData.image) {
+    const formData = new FormData()
+    formData.append('text', commentData.text)
+    formData.append('image', commentData.image)
+    return fetcher(
+      `${API_URL}/posts/${postId}/comment`,
+      {
+        method: 'POST',
+        body: formData,
+      },
+      true
+    )
+  }
+
   return fetcher(`${API_URL}/posts/${postId}/comment`, {
     method: 'POST',
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text: commentData.text }),
   })
 }
 
