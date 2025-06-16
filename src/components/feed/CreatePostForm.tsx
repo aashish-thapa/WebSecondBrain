@@ -6,18 +6,39 @@ import { Textarea } from '@/components/ui/Textarea'
 import { createPost, analyzePost } from '@/lib/api'
 import { Post } from '@/types'
 import { useAuth } from '@/contexts/AuthContext'
-import { SendHorizonal } from 'lucide-react'
+import { SendHorizonal, ImageIcon, X } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface CreatePostFormProps {
-  onPostCreated: (newPost: Post) => void
+  onPostCreated: (newPost: Omit<Post, 'user'>) => void
 }
 
 export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
   const { user } = useAuth()
   const [content, setContent] = React.useState('')
+  const [imageFile, setImageFile] = React.useState<File | null>(null)
+  const [imagePreview, setImagePreview] = React.useState<string | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setImageFile(file)
+      setImagePreview(URL.createObjectURL(file))
+    }
+  }
+
+  const removeImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -27,9 +48,15 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
     setError(null)
 
     try {
-      const newPost = await createPost({ content })
-      onPostCreated(newPost)
+      const newPost = await createPost({
+        content,
+        image: imageFile || undefined,
+      })
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { user: _, ...postWithoutUser } = newPost
+      onPostCreated(postWithoutUser)
       setContent('')
+      removeImage()
 
       // Fire-and-forget AI analysis
       analyzePost(newPost._id)
@@ -73,11 +100,51 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
             rows={3}
             className='bg-gray-50/50 border-gray-200/90 focus:bg-white'
           />
-          <div className='flex justify-end'>
-            <Button type='submit' disabled={isLoading || !content.trim()}>
-              {isLoading ? 'Posting...' : 'Post Thought'}
-              {!isLoading && <SendHorizonal className='w-4 h-4 ml-2' />}
+          {imagePreview && (
+            <div className='relative'>
+              <Image
+                src={imagePreview}
+                alt='Image preview'
+                width={500}
+                height={300}
+                className='rounded-lg object-cover w-full max-h-72'
+              />
+              <Button
+                size='icon'
+                variant='destructive'
+                className='absolute top-2 right-2 h-7 w-7 rounded-full'
+                onClick={removeImage}
+              >
+                <X className='h-4 w-4' />
+              </Button>
+            </div>
+          )}
+          <div className='flex justify-between items-center'>
+            <input
+              type='file'
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className='hidden'
+              accept='image/png, image/jpeg, image/gif'
+            />
+            <Button
+              type='button'
+              variant='ghost'
+              size='icon'
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading}
+            >
+              <ImageIcon className='w-5 h-5 text-primary' />
             </Button>
+            <div className='flex justify-end'>
+              <Button
+                type='submit'
+                disabled={isLoading || (!content.trim() && !imageFile)}
+              >
+                {isLoading ? 'Posting...' : 'Post Thought'}
+                {!isLoading && <SendHorizonal className='w-4 h-4 ml-2' />}
+              </Button>
+            </div>
           </div>
         </div>
       </form>

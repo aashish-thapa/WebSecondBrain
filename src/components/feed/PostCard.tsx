@@ -3,12 +3,20 @@
 import { Post } from '@/types'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
-import { MessageCircle, Heart, Share2, BarChart2, Trash2 } from 'lucide-react'
+import {
+  MessageCircle,
+  Heart,
+  Share2,
+  BarChart2,
+  Trash2,
+  ShieldAlert,
+} from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import * as React from 'react'
 import { likePost, deletePost } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
+import Image from 'next/image'
 
 interface PostCardProps {
   post: Post
@@ -24,6 +32,8 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
   )
   const [isLiking, setIsLiking] = React.useState(false)
   const [isDeleting, setIsDeleting] = React.useState(false)
+  const [imageError, setImageError] = React.useState(false)
+  const [isExpanded, setIsExpanded] = React.useState(false)
 
   const handleLike = async () => {
     if (!user || isLiking) return
@@ -75,78 +85,138 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
     }
   }
 
+  const isToxic = post.aiAnalysis?.toxicity?.detected === true
+  const isLongPost = post.content.length > 280
+
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded)
+  }
+
   return (
-    <div className='bg-white rounded-2xl shadow-sm border border-gray-200/80 p-5 sm:p-6 transition-all hover:shadow-md'>
-      <div className='flex items-start gap-4'>
-        <Link href={`/profile/${post.user.username}`}>
-          <div className='w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0'>
-            {post.user.username.charAt(0).toUpperCase()}
-          </div>
-        </Link>
-        <div className='flex-1'>
-          <div className='flex items-center justify-between'>
-            <Link href={`/profile/${post.user.username}`} className='group'>
-              <p className='font-bold group-hover:underline'>
-                {post.user.username}
-              </p>
-              <p className='text-sm text-muted-foreground'>
-                @{post.user.username}
-              </p>
-            </Link>
-            <p className='text-xs text-muted-foreground flex-shrink-0'>
-              {formatDistanceToNow(new Date(post.createdAt), {
-                addSuffix: true,
-              })}
-            </p>
-          </div>
-          <Link href={`/post/${post._id}`} className='group'>
-            <p className='mt-3 text-base text-foreground/90 whitespace-pre-wrap group-hover:text-primary/80 transition-colors'>
-              {post.content}
-            </p>
-          </Link>
+    <div
+      className={cn(
+        'bg-white rounded-2xl shadow-sm border border-gray-200/80 transition-all hover:shadow-md relative',
+        isToxic && 'border-red-500/50'
+      )}
+    >
+      {isToxic && (
+        <div className='absolute -top-3 -right-3 bg-red-500 text-white p-2 rounded-full shadow-lg'>
+          <ShieldAlert className='w-5 h-5' />
         </div>
-      </div>
-      <div className='mt-4 pl-12 sm:pl-16 flex justify-between items-center text-muted-foreground'>
-        <div className='flex items-center gap-6'>
-          <Link
-            href={`/post/${post._id}`}
-            className='flex items-center gap-2 text-xs hover:text-primary transition-colors'
-          >
-            <MessageCircle className='w-4 h-4' /> {post.comments.length}
+      )}
+      <div className='p-5 sm:p-6'>
+        <div className='flex items-start gap-4'>
+          <Link href={`/profile/${post.user.username}`}>
+            <div className='w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0 relative overflow-hidden'>
+              {post.user.profilePicture ? (
+                <Image
+                  src={post.user.profilePicture}
+                  alt={post.user.username}
+                  layout='fill'
+                  objectFit='cover'
+                />
+              ) : (
+                post.user.username.charAt(0).toUpperCase()
+              )}
+            </div>
           </Link>
-          <button
-            onClick={handleLike}
-            disabled={isLiking}
-            className={cn(
-              'flex items-center gap-2 text-xs hover:text-rose-500 transition-colors',
-              {
-                'text-rose-500': isLiked,
-              }
+          <div className='flex-1'>
+            <div className='flex items-center justify-between'>
+              <Link href={`/profile/${post.user.username}`} className='group'>
+                <p className='font-bold group-hover:underline'>
+                  {post.user.username}
+                </p>
+                <p className='text-sm text-muted-foreground'>
+                  @{post.user.username}
+                </p>
+              </Link>
+              <p className='text-xs text-muted-foreground flex-shrink-0'>
+                {formatDistanceToNow(new Date(post.createdAt), {
+                  addSuffix: true,
+                })}
+              </p>
+            </div>
+            <div className='mt-3 text-base text-foreground/90 whitespace-pre-wrap'>
+              {isLongPost && !isExpanded ? (
+                <>
+                  {post.content.substring(0, 280)}...
+                  <button
+                    onClick={toggleExpanded}
+                    className='text-primary font-semibold hover:underline ml-1'
+                  >
+                    View more
+                  </button>
+                </>
+              ) : (
+                <p>
+                  {post.content}
+                  {isLongPost && (
+                    <button
+                      onClick={toggleExpanded}
+                      className='text-primary font-semibold hover:underline ml-1'
+                    >
+                      View less
+                    </button>
+                  )}
+                </p>
+              )}
+            </div>
+            {post.image && !imageError && (
+              <div className='mt-4 relative'>
+                <Image
+                  src={post.image}
+                  alt='Post image'
+                  width={800}
+                  height={600}
+                  className='rounded-xl border'
+                  onError={() => setImageError(true)}
+                />
+              </div>
             )}
-          >
-            <Heart className={cn('w-4 h-4', { 'fill-current': isLiked })} />{' '}
-            {likes}
-          </button>
-          <button className='flex items-center gap-2 text-xs hover:text-green-500 transition-colors'>
-            <Share2 className='w-4 h-4' />
-          </button>
-        </div>
-        <div className='flex items-center gap-4'>
-          <div className='text-xs flex items-center gap-2 bg-secondary text-secondary-foreground py-1 px-2.5 rounded-full'>
-            <BarChart2 className='w-3.5 h-3.5' />
-            <span>{post.aiAnalysis.category}</span>
           </div>
-          {isOwner && (
-            <Button
-              onClick={handleDelete}
-              variant='ghost'
-              size='icon'
-              className='w-8 h-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive'
-              disabled={isDeleting}
+        </div>
+        <div className='mt-4 pl-12 sm:pl-16 flex justify-between items-center text-muted-foreground'>
+          <div className='flex items-center gap-6'>
+            <Link
+              href={`/post/${post._id}`}
+              className='flex items-center gap-2 text-xs hover:text-primary transition-colors'
             >
-              <Trash2 className='w-4 h-4' />
-            </Button>
-          )}
+              <MessageCircle className='w-4 h-4' /> {post.comments.length}
+            </Link>
+            <button
+              onClick={handleLike}
+              disabled={isLiking}
+              className={cn(
+                'flex items-center gap-2 text-xs hover:text-rose-500 transition-colors',
+                {
+                  'text-rose-500': isLiked,
+                }
+              )}
+            >
+              <Heart className={cn('w-4 h-4', { 'fill-current': isLiked })} />{' '}
+              {likes}
+            </button>
+            <button className='flex items-center gap-2 text-xs hover:text-green-500 transition-colors'>
+              <Share2 className='w-4 h-4' />
+            </button>
+          </div>
+          <div className='flex items-center gap-4'>
+            <div className='text-xs flex items-center gap-2 bg-secondary text-secondary-foreground py-1 px-2.5 rounded-full'>
+              <BarChart2 className='w-3.5 h-3.5' />
+              <span>{post.aiAnalysis.category}</span>
+            </div>
+            {isOwner && (
+              <Button
+                onClick={handleDelete}
+                variant='ghost'
+                size='icon'
+                className='w-8 h-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive'
+                disabled={isDeleting}
+              >
+                <Trash2 className='w-4 h-4' />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </div>

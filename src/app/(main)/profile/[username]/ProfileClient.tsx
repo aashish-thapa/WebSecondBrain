@@ -16,6 +16,8 @@ import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/contexts/AuthContext'
 import { PostCardSkeleton } from '@/components/feed/PostCardSkeleton'
 import { FollowListModal } from '@/components/profile/FollowListModal'
+import { EditProfileModal } from '@/components/modals/EditProfileModal'
+import Image from 'next/image'
 
 interface ProfileClientProps {
   username: string
@@ -52,18 +54,17 @@ export default function ProfileClient({ username }: ProfileClientProps) {
     users: User['followers']
   } | null>(null)
 
-  // Derived state to check if the current user is following the profile user
   const isFollowing = React.useMemo(() => {
     return currentUser?.following?.some((f) => f._id === profile?._id) ?? false
-  }, [currentUser, profile])
+  }, [currentUser?.following, profile?._id])
 
   React.useEffect(() => {
-    async function loadProfileAndPosts() {
+    async function loadAllData() {
+      if (!username) return
       setIsLoading(true)
       setError(null)
       try {
         let profileData: User
-
         // If viewing own profile, use the dedicated getProfile endpoint
         if (currentUser && currentUser.username === username) {
           profileData = await getProfile()
@@ -71,17 +72,13 @@ export default function ProfileClient({ username }: ProfileClientProps) {
           // Otherwise, search for the user to get their ID, then full profile
           const users = await searchUsers(username)
           if (users.length === 0) {
-            setError('User not found.')
-            setIsLoading(false)
-            return
+            throw new Error('User not found.')
           }
-          const profileUser = users[0]
-          profileData = await getUserById(profileUser._id)
+          profileData = await getUserById(users[0]._id)
         }
-
         setProfile(profileData)
 
-        // Fetch and filter posts for the displayed profile
+        // Fetch posts for the displayed profile
         const allPosts = await getFeed()
         const userPosts = allPosts.filter((p) => p.user.username === username)
         setPosts(userPosts)
@@ -96,10 +93,10 @@ export default function ProfileClient({ username }: ProfileClientProps) {
       }
     }
 
-    if (username) {
-      loadProfileAndPosts()
-    }
-  }, [username, currentUser])
+    loadAllData()
+    // This effect should re-run when the user navigates to a new profile,
+    // or when the logged-in user's data might have changed.
+  }, [username, currentUser?._id])
 
   const handleFollowToggle = async () => {
     if (!currentUser || !profile) return
@@ -124,6 +121,14 @@ export default function ProfileClient({ username }: ProfileClientProps) {
   }
 
   const isOwnProfile = currentUser?._id === profile?._id
+
+  const handleProfileUpdate = (updatedUser: User) => {
+    // We only update the parts of the profile that could have changed
+    setProfile((prev) => ({
+      ...prev,
+      ...updatedUser,
+    }))
+  }
 
   if (isLoading) {
     return (
@@ -151,8 +156,17 @@ export default function ProfileClient({ username }: ProfileClientProps) {
       {/* Profile Header */}
       <div className='bg-white rounded-2xl p-6 shadow-sm border'>
         <div className='flex flex-col sm:flex-row sm:items-center gap-6'>
-          <div className='w-24 h-24 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-5xl flex-shrink-0'>
-            {profile.username.charAt(0).toUpperCase()}
+          <div className='w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-5xl relative overflow-hidden'>
+            {profile.profilePicture ? (
+              <Image
+                src={profile.profilePicture}
+                alt={profile.username}
+                layout='fill'
+                objectFit='cover'
+              />
+            ) : (
+              profile.username.charAt(0).toUpperCase()
+            )}
           </div>
           <div className='flex-1'>
             <div className='flex items-center justify-between'>
@@ -161,7 +175,9 @@ export default function ProfileClient({ username }: ProfileClientProps) {
                 <p className='text-muted-foreground'>@{profile.username}</p>
               </div>
               {isOwnProfile ? (
-                <Button variant='outline'>Edit Profile</Button>
+                <EditProfileModal onProfileUpdate={handleProfileUpdate}>
+                  <Button variant='outline'>Edit Profile</Button>
+                </EditProfileModal>
               ) : (
                 <Button onClick={handleFollowToggle}>
                   <UserPlus className='w-4 h-4 mr-2' />

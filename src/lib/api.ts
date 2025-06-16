@@ -9,11 +9,17 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
 
-async function fetcher(url: string, options: RequestInit = {}) {
+async function fetcher(
+  url: string,
+  options: RequestInit = {},
+  isFormData = false
+) {
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null
   const headers = new Headers(options.headers)
-  headers.set('Content-Type', 'application/json')
+  if (!isFormData) {
+    headers.set('Content-Type', 'application/json')
+  }
 
   if (token) {
     headers.set('Authorization', `Bearer ${token}`)
@@ -34,7 +40,18 @@ async function fetcher(url: string, options: RequestInit = {}) {
       // Return a promise that will not resolve to prevent further processing
       return new Promise(() => {})
     }
-    const errorData = await response.json()
+    // Try to parse the error response as JSON, but fall back to plain text
+    // if it's not in JSON format.
+    const contentType = response.headers.get('content-type')
+    let errorData
+    if (contentType && contentType.includes('application/json')) {
+      errorData = await response.json()
+    } else {
+      const errorText = await response.text()
+      errorData = {
+        message: errorText || `Request failed with status ${response.status}`,
+      }
+    }
     throw new Error(errorData.message || 'Something went wrong')
   }
 
@@ -114,11 +131,28 @@ export async function getPostById(postId: string): Promise<Post> {
 
 export async function createPost(postData: {
   content: string
-  image?: string
+  image?: File
 }): Promise<Post> {
+  // If there is an image, use FormData
+  if (postData.image) {
+    const formData = new FormData()
+    formData.append('content', postData.content)
+    formData.append('image', postData.image)
+
+    return fetcher(
+      `${API_URL}/posts`,
+      {
+        method: 'POST',
+        body: formData,
+      },
+      true // Pass true to indicate this is a FormData request
+    )
+  }
+
+  // Otherwise, send as JSON
   return fetcher(`${API_URL}/posts`, {
     method: 'POST',
-    body: JSON.stringify(postData),
+    body: JSON.stringify({ content: postData.content }),
   })
 }
 
@@ -180,4 +214,25 @@ export async function markAllNotificationsAsRead(): Promise<{
   return fetcher(`${API_URL}/notifications/read-all`, {
     method: 'PUT',
   })
+}
+
+export async function createComment(
+  postId: string,
+  content: string
+): Promise<CommentType> {
+  return fetcher(`${API_URL}/posts/${postId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  })
+}
+
+export async function updateUserProfile(formData: FormData): Promise<User> {
+  return fetcher(
+    `${API_URL}/auth/profile/picture`,
+    {
+      method: 'PUT',
+      body: formData,
+    },
+    true
+  )
 }
