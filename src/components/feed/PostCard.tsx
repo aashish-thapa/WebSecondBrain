@@ -26,6 +26,39 @@ interface PostCardProps {
   onPostDeleted: (postId: string) => void
 }
 
+function formatContent(text: string): React.ReactNode[] {
+  if (!text) return []
+
+  // Regex to match URLs or **bolded text**
+  const regex = /(\*\*.*?\*\*|https?:\/\/[^\s]+)/g
+
+  return text.split(regex).map((part, index) => {
+    if (!part) return null
+
+    // Check for bold
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={index}>{part.substring(2, part.length - 2)}</strong>
+    }
+
+    // Check for URL
+    if (part.startsWith('http')) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target='_blank'
+          rel='noopener noreferrer'
+          className='text-primary hover:underline break-all'
+        >
+          {part}
+        </a>
+      )
+    }
+
+    return part
+  })
+}
+
 export function PostCard({ post, onPostDeleted }: PostCardProps) {
   const { user } = useAuth()
 
@@ -146,7 +179,7 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
             <div className='mt-3 text-base text-foreground/90 whitespace-pre-wrap break-words'>
               {isLongPost && !isExpanded ? (
                 <div>
-                  {post.content.substring(0, 280)}...
+                  {formatContent(post.content.substring(0, 280))}...
                   <button
                     onClick={toggleExpanded}
                     className='text-primary font-semibold hover:underline ml-1'
@@ -156,7 +189,7 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
                 </div>
               ) : (
                 <p>
-                  {post.content}
+                  {formatContent(post.content)}
                   {isLongPost && (
                     <button
                       onClick={toggleExpanded}
