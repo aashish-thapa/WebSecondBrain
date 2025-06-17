@@ -169,13 +169,13 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
               )}
             </div>
             {post.image && !imageError && (
-              <div className='mt-4 relative'>
+              <div className='mt-4 relative overflow-hidden rounded-xl border'>
                 <Image
                   src={post.image}
                   alt='Post image'
                   width={800}
                   height={600}
-                  className='rounded-xl border'
+                  className='w-full h-auto object-cover'
                   onError={() => setImageError(true)}
                 />
               </div>

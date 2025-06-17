@@ -56,13 +56,13 @@ export function CommentList({ comments }: CommentListProps) {
               </div>
               <p className='mt-1 text-foreground/90'>{comment.text}</p>
               {comment.image && (
-                <div className='mt-2'>
+                <div className='mt-2 relative overflow-hidden rounded-lg border'>
                   <Image
                     src={comment.image}
                     alt='Comment image'
                     width={300}
                     height={300}
-                    className='rounded-lg object-cover'
+                    className='w-full h-auto object-cover'
                   />
                 </div>
               )}

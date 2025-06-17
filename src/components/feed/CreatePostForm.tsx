@@ -117,13 +117,13 @@ export function CreatePostForm({ onPostCreated }: CreatePostFormProps) {
             className='bg-gray-50/50 border-gray-200/90 focus:bg-white'
           />
           {imagePreview && (
-            <div className='relative'>
+            <div className='relative mt-3'>
               <Image
                 src={imagePreview}
                 alt='Image preview'
                 width={500}
                 height={300}
-                className='rounded-lg object-cover w-full max-h-72'
+                className='rounded-lg object-cover w-full h-auto max-h-72'
               />
               <Button
                 size='icon'
