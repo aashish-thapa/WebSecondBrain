@@ -108,10 +108,10 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
           <ShieldAlert className='w-5 h-5' />
         </div>
       )}
-      <div className='p-5 sm:p-6'>
-        <div className='flex items-start gap-4'>
+      <div className='p-4 sm:p-5'>
+        <div className='flex items-start gap-3 sm:gap-4'>
           <Link href={`/profile/${post.user.username}`}>
-            <div className='w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0 relative overflow-hidden'>
+            <div className='w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg flex-shrink-0 relative overflow-hidden'>
               {post.user.profilePicture ? (
                 <Image
                   src={post.user.profilePicture}
@@ -126,23 +126,26 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
           </Link>
           <div className='flex-1'>
             <div className='flex items-center justify-between'>
-              <Link href={`/profile/${post.user.username}`} className='group'>
-                <p className='font-bold group-hover:underline'>
+              <Link
+                href={`/profile/${post.user.username}`}
+                className='group flex-shrink'
+              >
+                <p className='font-bold group-hover:underline truncate'>
                   {post.user.username}
                 </p>
-                <p className='text-sm text-muted-foreground'>
+                <p className='text-sm text-muted-foreground truncate'>
                   @{post.user.username}
                 </p>
               </Link>
-              <p className='text-xs text-muted-foreground flex-shrink-0'>
+              <p className='text-xs text-muted-foreground flex-shrink-0 ml-2'>
                 {formatDistanceToNow(new Date(post.createdAt), {
                   addSuffix: true,
                 })}
               </p>
             </div>
-            <div className='mt-3 text-base text-foreground/90 whitespace-pre-wrap'>
+            <div className='mt-3 text-base text-foreground/90 whitespace-pre-wrap break-words'>
               {isLongPost && !isExpanded ? (
-                <>
+                <div>
                   {post.content.substring(0, 280)}...
                   <button
                     onClick={toggleExpanded}
@@ -150,7 +153,7 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
                   >
                     View more
                   </button>
-                </>
+                </div>
               ) : (
                 <p>
                   {post.content}
@@ -179,8 +182,8 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
             )}
           </div>
         </div>
-        <div className='mt-4 pl-12 sm:pl-16 flex justify-between items-center text-muted-foreground'>
-          <div className='flex items-center gap-6'>
+        <div className='mt-4 pl-12 sm:pl-16 flex flex-wrap justify-between items-center gap-y-2 text-muted-foreground'>
+          <div className='flex items-center gap-4 sm:gap-6'>
             <Link
               href={`/post/${post._id}`}
               className='flex items-center gap-2 text-xs hover:text-primary transition-colors'
@@ -202,9 +205,10 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
             </button>
             <button className='flex items-center gap-2 text-xs hover:text-green-500 transition-colors'>
               <Share2 className='w-4 h-4' />
+              <span className='hidden sm:inline'>Share</span>
             </button>
           </div>
-          <div className='flex items-center gap-4'>
+          <div className='flex items-center gap-2 sm:gap-4'>
             {factCheck && (
               <div
                 className={cn(
@@ -226,7 +230,7 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
                 <span className='font-semibold capitalize'>{factCheck}</span>
               </div>
             )}
-            <div className='text-xs flex items-center gap-2 bg-secondary text-secondary-foreground py-1 px-2.5 rounded-full'>
+            <div className='hidden sm:flex text-xs items-center gap-2 bg-secondary text-secondary-foreground py-1 px-2.5 rounded-full'>
               <BarChart2 className='w-3.5 h-3.5' />
               <span>{post.aiAnalysis.category}</span>
             </div>

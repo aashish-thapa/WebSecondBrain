@@ -154,9 +154,9 @@ export default function ProfileClient({ username }: ProfileClientProps) {
   return (
     <div className='space-y-8'>
       {/* Profile Header */}
-      <div className='bg-white rounded-2xl p-6 shadow-sm border'>
-        <div className='flex flex-col sm:flex-row sm:items-center gap-6'>
-          <div className='w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-5xl relative overflow-hidden'>
+      <div className='bg-white rounded-2xl p-4 sm:p-6 shadow-sm border'>
+        <div className='flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6'>
+          <div className='w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-5xl relative overflow-hidden flex-shrink-0 mx-auto sm:mx-0'>
             {profile.profilePicture ? (
               <Image
                 src={profile.profilePicture}
@@ -168,31 +168,38 @@ export default function ProfileClient({ username }: ProfileClientProps) {
               profile.username.charAt(0).toUpperCase()
             )}
           </div>
-          <div className='flex-1'>
-            <div className='flex items-center justify-between'>
+          <div className='flex-1 text-center sm:text-left'>
+            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between'>
               <div>
                 <h2 className='text-2xl font-bold'>{profile.username}</h2>
                 <p className='text-muted-foreground'>@{profile.username}</p>
               </div>
-              {isOwnProfile ? (
-                <EditProfileModal onProfileUpdate={handleProfileUpdate}>
-                  <Button variant='outline'>Edit Profile</Button>
-                </EditProfileModal>
-              ) : (
-                <Button onClick={handleFollowToggle}>
-                  <UserPlus className='w-4 h-4 mr-2' />
-                  {isFollowing ? 'Unfollow' : 'Follow'}
-                </Button>
-              )}
+              <div className='mt-4 sm:mt-0'>
+                {isOwnProfile ? (
+                  <EditProfileModal onProfileUpdate={handleProfileUpdate}>
+                    <Button variant='outline' className='w-full sm:w-auto'>
+                      Edit Profile
+                    </Button>
+                  </EditProfileModal>
+                ) : (
+                  <Button
+                    onClick={handleFollowToggle}
+                    className='w-full sm:w-auto'
+                  >
+                    <UserPlus className='w-4 h-4 mr-2' />
+                    {isFollowing ? 'Unfollow' : 'Follow'}
+                  </Button>
+                )}
+              </div>
             </div>
-            <div className='mt-4 flex items-center gap-2 text-sm text-muted-foreground'>
+            <div className='mt-4 flex items-center justify-center sm:justify-start gap-2 text-sm text-muted-foreground'>
               <CalendarDays className='w-4 h-4' />
               {/* The full user object with createdAt is not available here, so we omit it for now */}
               {/* Joined {new Date(profile.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} */}
             </div>
           </div>
         </div>
-        <div className='mt-6 pt-6 border-t flex items-center gap-6 text-sm'>
+        <div className='mt-6 pt-6 border-t flex items-center justify-center sm:justify-start gap-6 text-sm'>
           {/* The full user object with follower counts is not available here, so we show placeholders */}
           <button
             className='hover:underline'
