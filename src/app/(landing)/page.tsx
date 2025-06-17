@@ -9,17 +9,20 @@ import {
   Zap,
   Quote,
   Brain,
+  ShieldCheck,
+  Smile,
+  Frown,
 } from 'lucide-react'
 
 export default function LandingPage() {
   return (
-    <div className='bg-[#EAD9E1] p-4 md:p-6 lg:p-8'>
-      <div className='bg-white rounded-2xl shadow-2xl overflow-hidden font-sans'>
+    <div className='bg-white'>
+      <div className='bg-white rounded-2xl overflow-hidden font-sans'>
         {/* Header */}
-        <header className='px-6 md:px-10 py-5 flex justify-between items-center border-b'>
+        <header className='px-4 md:px-10 py-5 flex justify-between items-center border-b sticky top-0 z-50 bg-white/80 backdrop-blur-md'>
           <Link href='#' className='flex items-center gap-2' prefetch={false}>
             <BrainCircuit className='h-6 w-6 text-foreground' />
-            <span className='font-bold text-lg'>Second Brain</span>
+            <span className='font-bold text-lg'>SayItLoud</span>
           </Link>
           <nav className='hidden md:flex items-center gap-6 text-sm font-medium'>
             <Link
@@ -63,10 +66,10 @@ export default function LandingPage() {
           {/* Hero Section */}
           <section className='px-6 md:px-10 py-20 md:py-28 text-center'>
             <div className='max-w-4xl mx-auto'>
-              <h1 className='text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight'>
+              <h1 className='text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight'>
                 Engage, Inquire, Illuminate.
                 <br />
-                <span className='bg-linear-to-r from-primary via-pink-500 to-orange-400 text-transparent bg-clip-text'>
+                <span className='bg-gradient-to-r from-primary via-pink-500 to-orange-400 text-transparent bg-clip-text'>
                   Your Social Intellect.
                 </span>
               </h1>
@@ -126,6 +129,50 @@ export default function LandingPage() {
                 <p className='mt-2 text-muted-foreground'>
                   Our platform encourages structured, thoughtful conversations,
                   moving beyond fleeting comments.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* AI Features Section */}
+        <section
+          id='ai-features'
+          className='px-6 md:px-10 py-12 md:py-20 bg-white'
+        >
+          <div className='max-w-6xl mx-auto'>
+            <div className='text-center mb-12'>
+              <h2 className='text-3xl md:text-4xl font-bold'>
+                AI-Powered Analysis
+              </h2>
+              <p className='mt-4 max-w-2xl mx-auto text-lg text-muted-foreground'>
+                Our platform leverages cutting-edge AI to provide deeper
+                insights into every conversation.
+              </p>
+            </div>
+            <div className='grid md:grid-cols-3 gap-8 text-center'>
+              <div className='p-8 rounded-2xl shadow-lg border animate-fade-in-up transition-all duration-300 hover:shadow-2xl hover:-translate-y-2'>
+                <ShieldCheck className='h-10 w-10 mx-auto text-green-500' />
+                <h3 className='mt-4 text-xl font-bold'>Fact-Check Analysis</h3>
+                <p className='mt-2 text-muted-foreground'>
+                  Our AI analyzes posts and provides a stance, indicating if the
+                  content is supported, neutral, or opposed by external sources.
+                </p>
+              </div>
+              <div className='p-8 rounded-2xl shadow-lg border animate-fade-in-up transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 delay-150'>
+                <Smile className='h-10 w-10 mx-auto text-blue-500' />
+                <h3 className='mt-4 text-xl font-bold'>Sentiment Analysis</h3>
+                <p className='mt-2 text-muted-foreground'>
+                  Understand the emotional tone behind the words. Our AI rates
+                  sentiment to foster more empathetic communication.
+                </p>
+              </div>
+              <div className='p-8 rounded-2xl shadow-lg border animate-fade-in-up transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 delay-300'>
+                <Frown className='h-10 w-10 mx-auto text-red-500' />
+                <h3 className='mt-4 text-xl font-bold'>Toxicity Detection</h3>
+                <p className='mt-2 text-muted-foreground'>
+                  We automatically flag potentially harmful or toxic comments to
+                  maintain a healthy and constructive environment for all users.
                 </p>
               </div>
             </div>
@@ -244,7 +291,7 @@ export default function LandingPage() {
         </section>
 
         {/* Footer */}
-        <footer className='px-6 md:px-10 py-8 bg-white border-t'>
+        <footer className='px-6 md:px-10 py-8 bg-gray-50/50 border-t'>
           <div className='max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4'>
             <div className='flex items-center gap-2'>
               <Brain className='h-6 w-6 text-foreground' />
