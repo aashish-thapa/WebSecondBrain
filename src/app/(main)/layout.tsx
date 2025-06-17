@@ -44,7 +44,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <aside className='hidden md:block md:col-span-3 sticky top-24'>
           <LeftSidebar />
         </aside>
-        <main className='col-span-12 md:col-span-8 lg:col-span-6'>
+        <main className='col-span-12 md:col-span-9 lg:col-span-6'>
           {children}
         </main>
         <aside className='hidden lg:block lg:col-span-3 sticky top-24'>
