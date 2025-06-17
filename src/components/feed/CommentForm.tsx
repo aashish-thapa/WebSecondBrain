@@ -108,13 +108,13 @@ export function CommentForm({ postId, onCommentCreated }: CommentFormProps) {
             rows={2}
           />
           {imagePreview && (
-            <div className='relative'>
+            <div className='relative mt-3'>
               <Image
                 src={imagePreview}
                 alt='Image preview'
                 width={200}
                 height={200}
-                className='rounded-lg object-cover w-full max-h-40'
+                className='rounded-lg object-cover w-full h-auto max-h-40'
               />
               <Button
                 size='icon'
